@@ -1,5 +1,5 @@
 Package: geneSignatures
-Title: Calculation of signature score for omics data
+Title: Computing signature scores for omics data
 Version: 0.1
 Authors@R: person("Maximilian", "Knoll", email = "m.knoll@dkfz.de", role = c("aut", "cre"))
 Description: Calculates scores for given signatures.

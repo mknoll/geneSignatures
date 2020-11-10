@@ -1,0 +1,15 @@
+Package: geneSignatures
+Title: Calculation of signature score for omics data
+Version: 0.1
+Authors@R: person("Maximilian", "Knoll", email = "m.knoll@dkfz.de", role = c("aut", "cre"))
+Description: Calculates scores for given signatures.
+Depends: R (>= 3.4.0)
+License: none
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.1
+Imports:
+    Hmisc,
+    doParallel,
+    foreach,
+    pheatmap

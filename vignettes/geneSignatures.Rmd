@@ -36,7 +36,7 @@ expr <- do.call(rbind, expr)
 Extract documented hypoxia gene signatures genes to create dummy expression matrix.
 
 ```{r}
-s1 <- system.file("extdata", "PMID12947397.csv", package="geneSignatures")
+s1 <- system.file("extdata", "hypoxia/PMID12947397.csv", package="geneSignatures")
 signD <- read.csv(s1)
 rownames(expr) <- sample(signD[,1], size=n)
 ```
@@ -56,6 +56,8 @@ obj <- fract(obj)
 
 ## plot data
 ret <- plotFract(obj)
-
 ```
+
+
+
 

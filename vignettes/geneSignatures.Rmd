@@ -17,3 +17,45 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(geneSignatures)
 ```
+
+## Create dummy data
+
+First, we create a synthetic gene expression matrix to show a representative hypoxia analysis.
+
+```{r}
+set.seed(1)
+n <- 20
+m <- 50
+expr <- list()
+for (i in 1:n) {
+    expr[[length(expr)+1]] <- rnorm(m)
+}
+expr <- do.call(rbind, expr)
+```
+
+Extract documented hypoxia gene signatures genes to create dummy expression matrix.
+
+```{r}
+s1 <- system.file("extdata", "PMID12947397.csv", package="geneSignatures")
+signD <- read.csv(s1)
+rownames(expr) <- sample(signD[,1], size=n)
+```
+
+## Perform analysis
+```{r}
+obj <- new("signClass", data.frame(expr))
+
+## to add a custom list
+#obj <- addSignatureDF(gs, data.frame(...), "ID")
+
+## load stored set of hypoxia signatures
+obj <- addSignatureGroup(obj, "Hypoxia")
+
+## calculate fractions
+obj <- fract(obj)
+
+## plot data
+ret <- plotFract(obj)
+
+```
+

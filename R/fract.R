@@ -31,7 +31,7 @@
 #' @export
 #'
 #' @return Updated singGene object
-fract <- function(obj, fun=median, fractCut=c(0.3, 0.7), CI=1) {
+fract <- function(obj, fun=median, fractCut=c(0.5, 0.5), CI=0) {
     # TODO: check if necessarydata is available
     res <- obj@fraction
 
@@ -40,38 +40,46 @@ fract <- function(obj, fun=median, fractCut=c(0.3, 0.7), CI=1) {
     doParallel::registerDoParallel(no_cores)
 
     out <- foreach(i=1:length(obj@signatures)) %dopar% {
-        tmp <- obj@expr[which(rownames(obj@expr) %in% obj@signatures[[i]]$data$Gene),
-                        , drop = F]
-        sg <- obj@signatures[[i]]$data
-        sg <- sg[match(rownames(tmp), sg$Gene), ,drop=F]
-        cut <- apply(tmp, 1, fun)
-        alt <- apply(tmp, 2, function(x) ifelse(x > cut, "up",
-                                                "down"))
-        if (class(alt) == "character") {
-          alt <- data.frame(t(alt))
-          rownames(alt) <- names(cut)
-        }
-        mtch <- apply(alt, 2, function(x) length(which(x == sg[,2])))
-        nMx <- length(unique(sg$Gene))
+	tmp <- obj@expr[which(rownames(obj@expr) %in% obj@signatures[[i]]$data$Gene),
+			, drop = F]
+	if (length(tmp[,1]) >= 1) {
+	    sg <- obj@signatures[[i]]$data
+	    sg <- sg[match(rownames(tmp), sg$Gene), ,drop=F]
+	    cut <- apply(tmp, 1, fun)
+	    alt <- apply(tmp, 2, function(x) ifelse(x > cut, "up",
+						    "down"))
+	    if (class(alt) == "character") {
+		alt <- data.frame(t(alt))
+		rownames(alt) <- names(cut)
+	    }
+	    mtch <- apply(alt, 2, function(x) length(which(x == sg[,2])))
+	    nMx <- length(unique(sg$Gene))
 
-      #Wilson confidence interval
-      #int <- binconf(mtch, nMx, method="Wilson")
+	    #Wilson confidence interval
+	    #int <- binconf(mtch, nMx, method="Wilson")
 
-      if (CI == 1) {
-        int <- binconf(mtch, nMx, method="Wilson")
-        grp <- ifelse(int[,"Lower"] > fractCut[2], "UP",
-                      ifelse(int[,"Upper"] <= fractCut[1], "DOWN", NA))
-      } else {
-        int <- data.frame(FREQ=mtch/nMx)
-        grp <- ifelse(int[,1] > fractCut[2], "UP",
-                      ifelse(int[,1] <= fractCut[1], "DOWN", NA))
-      }
+	    if (CI == 1) {
+		int <- binconf(mtch, nMx, method="Wilson")
+		grp <- ifelse(int[,"Lower"] > fractCut[2], "UP",
+			      ifelse(int[,"Upper"] <= fractCut[1], "DOWN", NA))
+	    } else {
+		int <- data.frame(FREQ=mtch/nMx)
+		grp <- ifelse(int[,1] > fractCut[2], "UP",
+			      ifelse(int[,1] <= fractCut[1], "DOWN", NA))
+	    }
 
-	list(ID=obj@signatures[[i]]$ID,
-	#ret <- list(ID=obj@signatures[[i]]$ID,
-	     mtch=mtch/nMx,
-	     CI=int,
-	     grp=grp)
+	    list(ID=obj@signatures[[i]]$ID,
+		 #ret <- list(ID=obj@signatures[[i]]$ID,
+		 mtch=mtch/nMx,
+		 CI=int,
+		 grp=grp)
+	} else {
+	    list(ID=obj@signatures[[i]]$ID,
+		 #ret <- list(ID=obj@signatures[[i]]$ID,
+		 mtch=NA,
+		 CI=NA,
+		 grp=NA)
+	}
     }
     res <- c(res, out)
 
@@ -99,37 +107,37 @@ fract <- function(obj, fun=median, fractCut=c(0.3, 0.7), CI=1) {
 #' @return list with elements GRP (classified) and
 #' N (continuous fraction)
 plotFract <- function(obj, type="cont") {
-	tmp <- obj@fraction
-	ids <- lapply(tmp, function(x) x$ID)
-	print(ids)
+    tmp <- obj@fraction
+    ids <- lapply(tmp, function(x) x$ID)
+    print(ids)
 
-	## numbers of matches
-	mt <- lapply(tmp, function(x) x$mtch)
-	mt <- do.call(rbind, mt)
-	rownames(mt) <- ids
-	if (type == "cont") {
-	    tryCatch({
-		pheatmap(mt)
-	    },error=function(e) {})
-	}
+    ## numbers of matches
+    mt <- lapply(tmp, function(x) x$mtch)
+    mt <- do.call(rbind, mt)
+    rownames(mt) <- ids
+    if (type == "cont") {
+	tryCatch({
+	    pheatmap(mt)
+	},error=function(e) {})
+    }
 
-	## Cat
-	m <- lapply(tmp, function(x) x$grp)
-	m <- do.call(rbind, m)
-	rownames(m) <- ids
-	m <- data.matrix(m)
-	m[which(m == "UP")] <- 1
-	m[which(m == "DOWN")] <- 0
+    ## Cat
+    m <- lapply(tmp, function(x) x$grp)
+    m <- do.call(rbind, m)
+    rownames(m) <- ids
+    m <- data.matrix(m)
+    m[which(m == "UP")] <- 1
+    m[which(m == "DOWN")] <- 0
 
-	m <- data.matrix(apply(m, 2, function(x) as.numeric(as.character(x))))
-	rownames(m) <- ids
-	if (type != "cont") {
-	    tryCatch({
-		pheatmap(m)
-	    }, error=function(e) { })
-	}
+    m <- data.matrix(apply(m, 2, function(x) as.numeric(as.character(x))))
+    rownames(m) <- ids
+    if (type != "cont") {
+	tryCatch({
+	    pheatmap(m)
+	}, error=function(e) { })
+    }
 
-	return(list(GRP=m, N=mt))
+    return(list(GRP=m, N=mt))
 }
 
 

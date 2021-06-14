@@ -117,8 +117,8 @@ plotFract <- function(obj, type="cont") {
     rownames(mt) <- ids
     if (type == "cont") {
 	tryCatch({
-	    pheatmap(mt)
-	},error=function(e) {})
+	    pheatmap(mt[complete.cases(mt),])
+	},error=function(e) { print(e) })
     }
 
     ## Cat
@@ -133,8 +133,8 @@ plotFract <- function(obj, type="cont") {
     rownames(m) <- ids
     if (type != "cont") {
 	tryCatch({
-	    pheatmap(m)
-	}, error=function(e) { })
+	    pheatmap(m[complete.cases(m),])
+	}, error=function(e) { print(e) })
     }
 
     return(list(GRP=m, N=mt))

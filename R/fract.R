@@ -106,7 +106,7 @@ fract <- function(obj, fun=median, fractCut=c(0.5, 0.5), CI=0) {
 #'
 #' @return list with elements GRP (classified) and
 #' N (continuous fraction)
-plotFract <- function(obj, type="cont") {
+plotFract <- function(obj, type="cont", plot=T) {
     tmp <- obj@fraction
     ids <- lapply(tmp, function(x) x$ID)
     print(ids)
@@ -115,7 +115,7 @@ plotFract <- function(obj, type="cont") {
     mt <- lapply(tmp, function(x) x$mtch)
     mt <- do.call(rbind, mt)
     rownames(mt) <- ids
-    if (type == "cont") {
+    if (type == "cont" && plot) {
 	tryCatch({
 	    pheatmap(mt[complete.cases(mt),])
 	},error=function(e) { print(e) })
@@ -131,7 +131,7 @@ plotFract <- function(obj, type="cont") {
 
     m <- data.matrix(apply(m, 2, function(x) as.numeric(as.character(x))))
     rownames(m) <- ids
-    if (type != "cont") {
+    if (type != "cont" && plot) {
 	tryCatch({
 	    pheatmap(m[complete.cases(m),])
 	}, error=function(e) { print(e) })
